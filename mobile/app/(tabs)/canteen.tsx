@@ -267,7 +267,7 @@ const startTracking = () => {
 
 const [orderStatus, setOrderStatus] = useState<'idle' | 'preparing' | 'onway' | 'delivered'>('idle');
 const [showQR, setShowQR] = useState(false);
-console.log("FOOD DATA:", data);
+
 const handlePlaceOrder = async () => {
   if (totalItems === 0) {
     setMessage('Please add at least one item to the cart.');
