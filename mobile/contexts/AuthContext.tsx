@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiUrl } from '@/constants/api';
-import { loginUser } from '../src/api/auth';
+
 
 type UserRole = 'admin' | 'user';
 
@@ -99,16 +99,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(authUser));
   };
 
-  const login = async (email: string, password: string) => {
+const login = async (email: string, password: string) => {
   try {
-    const res = await loginUser({
-      email: email.trim().toLowerCase(),
-      password,
+    const response = await fetch(apiUrl('/api/auth/login'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email.trim().toLowerCase(),
+        password,
+      }),
     });
 
-    const data = res.data;
+    const data = await response.json();
 
-    // Save user (this already works in your code)
+    if (!response.ok) {
+      return {
+        ok: false,
+        message: data.message || 'Login failed',
+      };
+    }
+
     const authUser = {
       _id: data.user._id,
       name: data.user.name,
@@ -127,15 +139,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return {
       ok: false,
-      message:
-        error?.response?.data?.message || 'Cannot connect to server',
+      message: 'Cannot connect to server',
     };
   }
 };
 
   const register = async (name: string, email: string, password: string) => {
     try {
-      const response = await fetch(apiUrl('/auth/register'), {
+      const response = await fetch(apiUrl('/api/auth/register'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -161,7 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const forgotPassword = async (email: string, newPassword: string) => {
     try {
-      const response = await fetch(apiUrl('/auth/forgot-password'), {
+      const response = await fetch(apiUrl('/api/auth/forgot-password'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -185,7 +196,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginWithGoogle = async (idToken: string) => {
     try {
-      const response = await fetch(apiUrl('/auth/google'), {
+      const response = await fetch(apiUrl('/api/auth/google'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken }),

@@ -129,47 +129,45 @@ const openSMS = async (phone: string, name: string) => {
     }
   };
 
-  const fetchVisitors = async () => {
-    try {
-      const response = await fetch(apiUrl('/visitors'), {
-        headers: user?.token ? { Authorization: `Bearer ${user.token}` } : undefined,
-      });
-      const data = await response.json();
+const fetchVisitors = async () => {
+  try {
+    const response = await fetch(apiUrl('/api/visitors'), {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(user?.token && { Authorization: `Bearer ${user.token}` }),
+      },
+    });
 
-      const mapped: Visitor[] = Array.isArray(data)
-        ? data.map((item: any) => ({
-            id: item._id,
-            name: item.fullName,
-            nic: item.nic,
-            contact: item.phoneNumber,
-            purpose: item.purpose,
-            destination: item.personToMeet,
-            date: item.checkInDate,
-            time: item.checkInTime,
-            status: item.status,
-          }))
-        : [];
-      setVisitors(mapped.reverse());
-    } catch (error) {
-      console.log('Error fetching visitors:', error);
-      showFeedback('Failed to load visitor records.', 'error');
-    } finally {
-      setLoading(false);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch visitors');
     }
-  };
-  
-  // Smart Auto-Fill Mock Feature
-  useEffect(() => {
-    if (visitorNic.length >= 4 && visitorName === '') {
-      const pastVisitor = visitors.find(v => v.nic.startsWith(visitorNic));
-      if (pastVisitor) {
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-        setVisitorName(pastVisitor.name);
-        setVisitorContact(pastVisitor.contact);
-        showFeedback(`Auto-filled details for ${pastVisitor.name} (Returning Visitor)`, 'info');
-      }
-    }
-  }, [visitorNic]);
+
+    const mapped: Visitor[] = Array.isArray(data)
+      ? data.map((item: any) => ({
+          id: item._id,
+          name: item.fullName,
+          nic: item.nic,
+          contact: item.phoneNumber,
+          purpose: item.purpose,
+          destination: item.personToMeet,
+          date: item.checkInDate,
+          time: item.checkInTime,
+          status: item.status,
+        }))
+      : [];
+
+    setVisitors(mapped.reverse());
+
+  } catch (error) {
+    console.log('Error fetching visitors:', error);
+    showFeedback('Failed to load visitor records.', 'error');
+  } finally {
+    setLoading(false);
+  }
+};
+
 const [resName, setResName] = useState('');
 const [resDate, setResDate] = useState('');
 const [resTime, setResTime] = useState('');
@@ -179,7 +177,7 @@ const createReservation = async () => {
     console.log('📤 Sending reservation...');
 
     // ✅ DEFINE res FIRST
-    const response = await fetch(apiUrl('/reservations'), {
+    const response = await fetch(apiUrl('/api/reservations'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -226,7 +224,7 @@ useEffect(() => {
 }, []);
 
 const fetchReservations = async () => {
-  const res = await fetch(apiUrl('/reservations'));
+  const res = await fetch(apiUrl('/api/reservations'));
   const data = await res.json();
   setReservations(data);
 };
@@ -300,7 +298,7 @@ phoneNumber: visitorContact.trim(),
   status: 'Checked In',
 };
 
-      const response = await fetch(apiUrl('/visitors'), {
+      const response = await fetch(apiUrl('/api/visitors'), {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -357,7 +355,7 @@ const savedVisitor = data;
 
     try {
       setUpdatingId(id);
-      const response = await fetch(apiUrl(`/visitors/${id}/checkout`), {
+      const response = await fetch(apiUrl(`/api/visitors/${id}/checkout`), {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${user?.token}`,
@@ -626,7 +624,7 @@ const savedVisitor = data;
                   <TouchableOpacity
                     style={styles.markDoneBtn}
                     onPress={async () => {
-                      await fetch(apiUrl(`/reservations/${r._id}/arrived`), { method: 'PATCH' });
+                      await fetch(apiUrl(`/api/reservations/${r._id}/arrived`), { method: 'PATCH' });
                       fetchReservations();
                       showFeedback(`✔️ ${r.fullName} marked as arrived.`, 'success');
                     }}

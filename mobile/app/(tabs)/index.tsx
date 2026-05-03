@@ -40,7 +40,7 @@ export default function HomeScreen() {
       emoji: '📢',
       title: 'Announcements',
       text: 'Stay updated with campus notices.',
-      route: '/announcements',
+      route: '/api/announcements',
     },
     {
       id: 5,

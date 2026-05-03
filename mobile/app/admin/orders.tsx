@@ -70,27 +70,48 @@ export default function AdminOrders() {
     };
   }, []);
 
-  const fetchOrders = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(apiUrl('/orders'));
-      if (!res.ok) throw new Error('Failed to fetch orders');
-      const data = await res.json();
-      setOrders(data.sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-    } catch (err: any) {
-      setError(err.message || 'An error occurred');
-    } finally {
-      setLoading(false);
+ const fetchOrders = async () => {
+  try {
+    setLoading(true);
+
+    const res = await fetch(apiUrl('/api/orders'), {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(user?.token && { Authorization: `Bearer ${user.token}` }),
+      },
+    });
+
+    if (!res.ok) throw new Error('Failed to fetch orders');
+
+    const data = await res.json();
+
+    // ✅ SAFETY CHECK
+    if (!Array.isArray(data)) {
+      console.error('Invalid orders data:', data);
+      setOrders([]);
+      return;
     }
-  };
+
+    setOrders(
+      [...data].sort((a: Order, b: Order) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+    );
+
+  } catch (err: any) {
+    setError(err.message || 'An error occurred');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const updateStatus = async (id: string, status: Order['status']) => {
     try {
-      const res = await fetch(apiUrl(`/orders/${id}/status`), {
+      const res = await fetch(apiUrl(`/api/orders/${id}/status`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${user?.token}`,
+          ...(user?.token && { Authorization: `Bearer ${user.token}` }),
         },
         body: JSON.stringify({ status }),
       });

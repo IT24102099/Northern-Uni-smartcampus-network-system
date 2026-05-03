@@ -70,7 +70,7 @@ export default function AdminBooksScreen() {
 
   const fetchBooks = async () => {
     try {
-      const response = await fetch(apiUrl('/books'));
+      const response = await fetch(apiUrl('/api/books'));
       const data = await response.json();
       const mapped: Book[] = data.map((item: any) => ({
         id: item._id,
@@ -110,7 +110,7 @@ export default function AdminBooksScreen() {
     }
 
     try {
-      const response = await fetch(apiUrl('/books'), {
+      const response = await fetch(apiUrl('/api/books'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -153,7 +153,7 @@ export default function AdminBooksScreen() {
         style: 'destructive',
         onPress: async () => {
           try {
-            const response = await fetch(apiUrl(`/books/${id}`), {
+            const response = await fetch(apiUrl(`/api/books/${id}`), {
               method: 'DELETE',
               headers: { Authorization: `Bearer ${user?.token}` },
             });
@@ -172,7 +172,7 @@ export default function AdminBooksScreen() {
   const handleUpdate = async () => {
     if (!editState) return;
     try {
-      const response = await fetch(apiUrl(`/books/${editState.id}`), {
+      const response = await fetch(apiUrl(`/api/books/${editState.id}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

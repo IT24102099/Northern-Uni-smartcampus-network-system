@@ -69,7 +69,7 @@ export default function CanteenScreen() {
 
   const fetchFoodItems = async () => {
     try {
-      const response = await fetch(apiUrl('/food'));
+      const response = await fetch(apiUrl('/api/food'));
       const data = await response.json();
 
       const mapped: FoodItem[] = data.map((item: any) => ({
@@ -267,7 +267,7 @@ const startTracking = () => {
 
 const [orderStatus, setOrderStatus] = useState<'idle' | 'preparing' | 'onway' | 'delivered'>('idle');
 const [showQR, setShowQR] = useState(false);
-
+console.log("FOOD DATA:", data);
 const handlePlaceOrder = async () => {
   if (totalItems === 0) {
     setMessage('Please add at least one item to the cart.');
@@ -277,7 +277,7 @@ const handlePlaceOrder = async () => {
 
   try {
     // ✅ SEND TO BACKEND
-    await fetch(apiUrl('/orders'), {
+    await fetch(apiUrl('/api/orders'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
